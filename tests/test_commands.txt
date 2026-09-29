@@ -1,0 +1,9 @@
+python src\shell.py
+ls -la
+cd /var/log
+ls "my folder"
+ls $USERPROFILE
+ls $COMSPEC
+ls ${USERNAME}
+unknown_command arg1
+exit

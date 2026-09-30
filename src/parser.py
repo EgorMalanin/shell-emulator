@@ -3,18 +3,27 @@
 """
 import os
 import re
+import shlex
 from typing import List, Tuple
 
 
 def expand_variables(command: str) -> str:
     """
     Раскрывает переменные окружения в команде.
+
+    Поддерживает форматы: $VAR и ${VAR}
+
+    Args:
+        command: Строка команды с переменными окружения
+
+    Returns:
+        Строка с раскрытыми переменными
     """
     pattern_braces = r'\$\{([A-Za-z_][A-Za-z0-9_]*)\}'
     pattern_simple = r'\$([A-Za-z_][A-Za-z0-9_]*)'
 
     def replace_var(match):
-        """Заменяет переменную на её значение."""
+        """Заменяет переменную на её значение из окружения."""
         var_name = match.group(1)
         return os.environ.get(var_name, '')
 
@@ -27,30 +36,21 @@ def expand_variables(command: str) -> str:
 def parse_command(command_line: str) -> Tuple[str, List[str]]:
     """
     Парсит строку команды на команду и аргументы.
+
+    Использует shlex для корректной обработки кавычек.
+
+    Args:
+        command_line: Строка команды от пользователя
+
+    Returns:
+        Кортеж (команда, список аргументов)
     """
     expanded = expand_variables(command_line)
 
-    tokens = []
-    current_token = ''
-    in_quotes = False
-    quote_char = None
-
-    for char in expanded:
-        if char in ('"', "'") and not in_quotes:
-            in_quotes = True
-            quote_char = char
-        elif char == quote_char and in_quotes:
-            in_quotes = False
-            quote_char = None
-        elif char == ' ' and not in_quotes:
-            if current_token:
-                tokens.append(current_token)
-                current_token = ''
-        else:
-            current_token += char
-
-    if current_token:
-        tokens.append(current_token)
+    try:
+        tokens = shlex.split(expanded)
+    except ValueError:
+        tokens = expanded.split()
 
     if not tokens:
         return '', []

@@ -1,0 +1,6 @@
+# Testing minimal VFS
+# Shows VFS info and lists files
+
+vfs-info
+ls
+exit

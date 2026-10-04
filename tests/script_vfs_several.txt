@@ -1,0 +1,7 @@
+# Testing VFS with several files
+
+vfs-info
+ls
+ls file1.txt
+cd /
+exit

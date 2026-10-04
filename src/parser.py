@@ -10,14 +10,6 @@ from typing import List, Tuple
 def expand_variables(command: str) -> str:
     """
     Раскрывает переменные окружения в команде.
-
-    Поддерживает форматы: $VAR и ${VAR}
-
-    Args:
-        command: Строка команды с переменными окружения
-
-    Returns:
-        Строка с раскрытыми переменными
     """
     pattern_braces = r'\$\{([A-Za-z_][A-Za-z0-9_]*)\}'
     pattern_simple = r'\$([A-Za-z_][A-Za-z0-9_]*)'
@@ -36,17 +28,8 @@ def expand_variables(command: str) -> str:
 def parse_command(command_line: str) -> Tuple[str, List[str]]:
     """
     Парсит строку команды на команду и аргументы.
-
-    Использует shlex для корректной обработки кавычек.
-
-    Args:
-        command_line: Строка команды от пользователя
-
-    Returns:
-        Кортеж (команда, список аргументов)
     """
     expanded = expand_variables(command_line)
-
     try:
         tokens = shlex.split(expanded)
     except ValueError:

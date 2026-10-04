@@ -1,0 +1,29 @@
+# Full test of all implemented commands
+# Tests VFS, ls, cd, vfs-info, errors, and exit
+
+# VFS info
+vfs-info
+
+# List root
+ls
+
+# Navigate through nested structure
+cd level1
+ls
+cd level2
+cd level3
+ls
+
+# Go back to root
+cd /
+ls
+
+# Test error handling
+cd nonexistent
+ls nonexistent
+
+# Test unknown command
+foo bar
+
+# Exit
+exit

@@ -1,66 +1,60 @@
 """
 Модуль с реализацией команд эмулятора оболочки.
 """
-from typing import List
+from typing import List, Optional
+from vfs import VirtualFileSystem
 
-
-def cmd_ls(args: List[str]) -> str:
+def cmd_ls(args: List[str], vfs: VirtualFileSystem) -> str:
     """
-    Команда ls (заглушка).
-
-    Args:
-        args: Список аргументов команды
-
-    Returns:
-        Строка с результатом выполнения
+    Выводит содержимое директории в VFS.
     """
-    return f"Command 'ls' executed with args: {args}"
+    path = args[0] if args else ''
+    success, output = vfs.list_directory(path)
+    if not success:
+        return output
+    return output
 
-
-def cmd_cd(args: List[str]) -> str:
+def cmd_cd(args: List[str], vfs: VirtualFileSystem) -> str:
     """
-    Команда cd (заглушка).
-
-    Args:
-        args: Список аргументов команды
-
-    Returns:
-        Строка с результатом выполнения
+    Меняет текущую директорию в VFS.
     """
-    return f"Command 'cd' executed with args: {args}"
+    path = args[0] if args else ''
+    success, message = vfs.change_directory(path)
+    return message
+
+
+def cmd_vfs_info(args: List[str], vfs: VirtualFileSystem) -> str:
+    """
+    Выводит информацию о VFS (имя и SHA-256 хеш).
+    """
+    name = vfs.vfs_name
+    sha = vfs.get_sha256()
+    return f"VFS name: {name}\nSHA-256: {sha}"
 
 
 def cmd_exit(args: List[str]) -> str:
     """
-    Команда exit для завершения работы эмулятора.
-
-    Args:
-        args: Список аргументов команды (игнорируются)
-
-    Returns:
-        Специальная строка-сигнал для завершения
+    Завершает работу эмулятора.
     """
     return "__EXIT__"
 
 
-def execute_command(command: str, args: List[str]) -> str:
+def execute_command(command: str, args: List[str],
+                    vfs: Optional[VirtualFileSystem] = None) -> str:
     """
     Выполняет команду и возвращает результат.
-
-    Args:
-        command: Имя команды
-        args: Список аргументов
-
-    Returns:
-        Результат выполнения команды или сообщение об ошибке
     """
+    if vfs is None:
+        vfs = VirtualFileSystem()
+
     commands = {
-        'ls': cmd_ls,
-        'cd': cmd_cd,
-        'exit': cmd_exit,
+        'ls': lambda: cmd_ls(args, vfs),
+        'cd': lambda: cmd_cd(args, vfs),
+        'vfs-info': lambda: cmd_vfs_info(args, vfs),
+        'exit': lambda: cmd_exit(args),
     }
 
     if command in commands:
-        return commands[command](args)
+        return commands[command]()
 
     return f"Error: Unknown command '{command}'"

@@ -6,6 +6,7 @@ import hashlib
 import os
 from typing import Dict, List, Optional, Tuple
 
+
 class VFSNode:
     """Узел дерева виртуальной файловой системы."""
     def __init__(self, name: str, is_dir: bool,
@@ -18,14 +19,17 @@ class VFSNode:
         self.content = content
         self.children: Dict[str, 'VFSNode'] = {}
 
+
 class VirtualFileSystem:
     """Виртуальная ФС, работающая полностью в памяти."""
+
     def __init__(self) -> None:
         """Инициализирует пустую VFS с корневой директорией."""
         self.root = VFSNode('/', True)
         self.cwd = self.root
         self.vfs_name = 'default'
         self.vfs_path = ''
+        self.history: List[str] = []
 
     def load_from_directory(self, path: str) -> bool:
         """
@@ -35,15 +39,16 @@ class VirtualFileSystem:
             return False
         if not os.path.isdir(path):
             return False
+
         self.vfs_path = path
         self.vfs_name = os.path.basename(os.path.abspath(path))
         self.root = VFSNode('/', True)
         self.cwd = self.root
+
         self._load_directory(path, self.root)
         return True
 
-    def _load_directory(self, real_path: str,
-                        vfs_node: VFSNode) -> None:
+    def _load_directory(self, real_path: str,vfs_node: VFSNode) -> None:
         """
         Рекурсивно загружает реальную директорию в VFS.
         """
@@ -113,6 +118,7 @@ class VirtualFileSystem:
                 if part not in current.children:
                     return None
                 current = current.children[part]
+
         return current
 
     def _find_parent(self, node: VFSNode) -> Optional[VFSNode]:
@@ -138,11 +144,13 @@ class VirtualFileSystem:
         """
         if not path_str:
             return True, ''
+
         node = self.resolve_path(path_str)
         if node is None:
             return False, f"cd: нет директории: {path_str}"
         if not node.is_dir:
             return False, f"cd: не директория: {path_str}"
+
         self.cwd = node
         return True, ''
 
@@ -154,6 +162,7 @@ class VirtualFileSystem:
             node = self.resolve_path(path_str)
         else:
             node = self.cwd
+
         if node is None:
             return False, f"ls: нет доступа к '{path_str}'"
         if not node.is_dir:
@@ -161,6 +170,7 @@ class VirtualFileSystem:
 
         if not node.children:
             return True, ''
+
         lines = []
         for name in sorted(node.children.keys()):
             child = node.children[name]
@@ -169,6 +179,7 @@ class VirtualFileSystem:
             else:
                 size = len(child.content)
                 lines.append(f"{name} ({size} bytes)")
+
         return True, '\n'.join(lines)
 
     def get_current_path(self) -> str:
@@ -185,3 +196,15 @@ class VirtualFileSystem:
         if path_parts:
             return '/' + '/'.join(path_parts)
         return '/'
+
+    def read_file(self, path: str) -> Optional[str]:
+        """
+        Читает содержимое файла из VFS как текст.
+        """
+        node = self.resolve_path(path)
+        if node is None or node.is_dir:
+            return None
+        try:
+            return node.content.decode('utf-8')
+        except UnicodeDecodeError:
+            return "[Binary content]"

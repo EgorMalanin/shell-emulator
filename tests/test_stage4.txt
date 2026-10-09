@@ -1,0 +1,17 @@
+# Тестирование команд Этапа 4
+
+
+vfs-info
+ls
+cd level1
+ls
+cd level2/level3
+ls
+cd /
+uniq test_uniq.txt
+tail -4 test_uniq.txt
+
+history
+
+
+exit

@@ -2,5 +2,5 @@
 # Shows VFS info and lists files
 
 vfs-info
-ls
+vfs-ls
 exit

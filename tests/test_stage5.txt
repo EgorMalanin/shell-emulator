@@ -1,0 +1,12 @@
+
+rmdir nonexistent_folder
+
+rmdir root_file.txt
+
+rmdir level1
+
+rmdir empty_dir
+
+ls
+
+exit

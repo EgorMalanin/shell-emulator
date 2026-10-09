@@ -208,3 +208,31 @@ class VirtualFileSystem:
             return node.content.decode('utf-8')
         except UnicodeDecodeError:
             return "[Binary content]"
+    def remove_directory(self, path_str: str) -> Tuple[bool, str]:
+        """
+        Удаляет пустую директорию из VFS.
+        """
+        if not path_str:
+            return False, "rmdir: missing operand"
+
+        node = self.resolve_path(path_str)
+        if node is None:
+            return False, f"rmdir: '{path_str}': No such file or directory"
+
+        if not node.is_dir:
+            return False, f"rmdir: '{path_str}': Not a directory"
+
+        if node.children:
+            return False, f"rmdir: '{path_str}': Directory not empty"
+
+        if node == self.root:
+            return False, "rmdir: '/': Invalid argument"
+
+        parent = self._find_parent(node)
+        if parent:
+            del parent.children[node.name]
+            if self.cwd == node:
+                self.cwd = parent
+            return True, ""
+
+        return False, "rmdir: Internal error"

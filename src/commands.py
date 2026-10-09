@@ -104,6 +104,13 @@ def cmd_exit(args: List[str]) -> str:
     """
     return "__EXIT__"
 
+def cmd_rmdir(args: List[str], vfs: VirtualFileSystem) -> str:
+    """
+    Удаляет пустую директорию из VFS.
+    """
+    path = args[0] if args else ''
+    success, message = vfs.remove_directory(path)
+    return message
 
 def execute_command(cmd:str,args:List[str],vfs:Optional[VFS]=None) -> str:
     """
@@ -119,10 +126,11 @@ def execute_command(cmd:str,args:List[str],vfs:Optional[VFS]=None) -> str:
         'uniq': lambda: cmd_uniq(args, vfs),
         'tail': lambda: cmd_tail(args, vfs),
         'history': lambda: cmd_history(args, vfs),
+        'rmdir': lambda: cmd_rmdir(args, vfs),  # <-- НОВАЯ КОМАНДА
         'exit': lambda: cmd_exit(args),
     }
 
-    if cmd in commands:
+    if cmd in cmd:
         return commands[cmd]()
 
     return f"Error: Unknown command '{cmd}'"

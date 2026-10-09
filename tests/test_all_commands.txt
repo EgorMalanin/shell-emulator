@@ -5,22 +5,22 @@
 vfs-info
 
 # List root
-ls
+vfs-ls
 
 # Navigate through nested structure
-cd level1
-ls
+vfs-cd level1
+vfs-ls
 cd level2
 cd level3
-ls
+vfs-ls
 
 # Go back to root
-cd /
-ls
+vfs-cd /
+vfs-ls
 
 # Test error handling
-cd nonexistent
-ls nonexistent
+vfs-cd nonexistent
+vfs-ls nonexistent
 
 # Test unknown command
 foo bar

@@ -1,13 +1,13 @@
 # Testing nested VFS (3+ levels)
 
 vfs-info
-ls
-cd level1
-ls
-cd level2
-ls
-cd level3
-ls
-cd /
-ls
+vfs-ls
+vfs-cd level1
+vfs-ls
+vfs-cd level2
+vfs-ls
+vfs-cd level3
+vfs-ls
+vfs-cd /
+vfs-ls
 exit

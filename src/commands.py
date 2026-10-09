@@ -48,8 +48,8 @@ def execute_command(command: str, args: List[str],
         vfs = VirtualFileSystem()
 
     commands = {
-        'ls': lambda: cmd_ls(args, vfs),
-        'cd': lambda: cmd_cd(args, vfs),
+        'vfs-ls': lambda: cmd_ls(args, vfs),      # Было 'ls'
+        'vfs-cd': lambda: cmd_cd(args, vfs),      # Было 'cd'
         'vfs-info': lambda: cmd_vfs_info(args, vfs),
         'exit': lambda: cmd_exit(args),
     }

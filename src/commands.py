@@ -2,9 +2,9 @@
 Модуль с реализацией команд эмулятора оболочки.
 """
 from typing import Dict, List, Optional, Tuple
-from typing import List, Optional
 from vfs import VirtualFileSystem
 VFS = VirtualFileSystem
+DEFAULT_TAIL_LINES = 10
 
 def cmd_ls(args: List[str],
            vfs: VirtualFileSystem) -> str:
@@ -68,7 +68,7 @@ def cmd_tail(args: List[str], vfs: VirtualFileSystem) -> str:
     """
     Выводит последние N строк файла (по умолчанию 10).
     """
-    num_lines = 10
+    num_lines = DEFAULT_TAIL_LINES
     file_path = ''
 
     if args and args[0].startswith('-'):
@@ -147,11 +147,11 @@ def execute_command(cmd:str,args:List[str],vfs:Optional[VFS]=None) -> str:
         'uniq': lambda: cmd_uniq(args, vfs),
         'tail': lambda: cmd_tail(args, vfs),
         'history': lambda: cmd_history(args, vfs),
-        'rmdir': lambda: cmd_rmdir(args, vfs),  # <-- НОВАЯ КОМАНДА
+        'rmdir': lambda: cmd_rmdir(args, vfs),
         'exit': lambda: cmd_exit(args),
     }
 
-    if cmd in cmd:
+    if cmd in commands:
         return commands[cmd]()
 
     return f"Error: Unknown command '{cmd}'"

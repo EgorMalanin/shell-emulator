@@ -6,7 +6,7 @@ from vfs import VirtualFileSystem
 
 def cmd_ls(args: List[str], vfs: VirtualFileSystem) -> str:
     """
-    Выводит содержимое директории в VFS.
+    Выводит содержимое директории в VFS
     """
     path = args[0] if args else ''
     success, output = vfs.list_directory(path)

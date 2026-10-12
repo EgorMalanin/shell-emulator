@@ -1,16 +1,23 @@
 """
 Модуль с реализацией команд эмулятора оболочки.
 """
+from typing import Dict, List, Optional, Tuple
 from typing import List, Optional
 from vfs import VirtualFileSystem
 VFS = VirtualFileSystem
 
-def cmd_ls(args: List[str], vfs: VirtualFileSystem) -> str:
+def cmd_ls(args: List[str],
+           vfs: VirtualFileSystem) -> str:
     """
     Выводит содержимое директории в VFS.
     """
-    path = args[0] if args else ''
-    success, output = vfs.list_directory(path)
+    flags, path = parse_ls_flags(args)
+    success, output = vfs.list_directory(
+        path_str=path,
+        show_all=flags['a'],
+        long_format=flags['l'],
+        human_readable=flags['h']
+    )
     if not success:
         return output
     return output
@@ -96,7 +103,21 @@ def cmd_history(args: List[str], vfs: VirtualFileSystem) -> str:
         result.append(f"{i}: {cmd}")
 
     return '\n'.join(result)
-
+def parse_ls_flags(args: List[str]
+                   ) -> Tuple[Dict[str, bool], str]:
+    """
+    Разбирает аргументы ls на флаги и путь.
+    """
+    flags = {'a': False, 'l': False, 'h': False}
+    path = ''
+    for arg in args:
+        if arg.startswith('-'):
+            for char in arg[1:]:
+                if char in flags:
+                    flags[char] = True
+        else:
+            path = arg
+    return flags, path
 
 def cmd_exit(args: List[str]) -> str:
     """

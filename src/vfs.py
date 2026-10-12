@@ -153,33 +153,56 @@ class VirtualFileSystem:
 
         self.cwd = node
         return True, ''
-
-    def list_directory(self, path_str: str = '') -> Tuple[bool, str]:
+    def _format_size(self, size: int,human: bool) -> str:
         """
-        Выводит содержимое директории.
+        Форматирует размер файла.
+        """
+        if not human:
+            return f"{size} bytes"
+        units = ['B', 'K', 'M', 'G', 'T']
+        for unit in units:
+            if size < 1024:
+                return f"{size}{unit}"
+            size = size / 1024
+        return f"{size}P"
+
+    def list_directory(self,path_str: str = '',show_all: bool = False,
+        long_format: bool = False,human_readable: bool = False) -> Tuple[bool, str]:
+        """
+        Выводит содержимое директории с учётом флагов.
         """
         if path_str:
             node = self.resolve_path(path_str)
         else:
             node = self.cwd
-
         if node is None:
             return False, f"ls: нет доступа к '{path_str}'"
         if not node.is_dir:
             return False, f"ls: не директория: {path_str}"
-
         if not node.children:
             return True, ''
-
         lines = []
         for name in sorted(node.children.keys()):
             child = node.children[name]
-            if child.is_dir:
-                lines.append(f"{name}/")
+            is_hidden = name.startswith('.')
+            if not show_all and is_hidden:
+                continue
+            if long_format:
+                type_mark = 'd' if child.is_dir else '-'
+                if child.is_dir:
+                    size_str = '-'
+                else:
+                    size_str = self._format_size(len(child.content), human_readable)
+                suffix = '/' if child.is_dir else ''
+                line = f"{type_mark} {size_str:>8} {name}{suffix}"
             else:
-                size = len(child.content)
-                lines.append(f"{name} ({size} bytes)")
-
+                suffix = '/' if child.is_dir else ''
+                if child.is_dir:
+                    line = f"{name}{suffix}"
+                else:
+                    size_str = self._format_size(len(child.content), human_readable)
+                    line = f"{name} ({size_str})"
+            lines.append(line)
         return True, '\n'.join(lines)
 
     def get_current_path(self) -> str:

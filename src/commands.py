@@ -2,21 +2,9 @@
 Модуль с реализацией команд эмулятора оболочки.
 """
 from typing import Dict, List, Optional, Tuple
-from typing import List, Optional
 from vfs import VirtualFileSystem
 VFS = VirtualFileSystem
-
-def cmd_ls(args: List[str], vfs: VirtualFileSystem) -> str:
-    """
-    Выводит содержимое директории в VFS.
-    """
-    path = args[0] if args else ''
-    success, output = vfs.list_directory(path)
-    if not success:
-        return output
-    return output
-
-
+DEFAULT_TAIL_LINES = 10
 def cmd_cd(args: List[str], vfs: VirtualFileSystem) -> str:
     """
     Меняет текущую директорию в VFS.
@@ -62,7 +50,7 @@ def cmd_tail(args: List[str], vfs: VirtualFileSystem) -> str:
     """
     Выводит последние N строк файла (по умолчанию 10).
     """
-    num_lines = 10
+    num_lines = DEFAULT_TAIL_LINES
     file_path = ''
 
     if args and args[0].startswith('-'):

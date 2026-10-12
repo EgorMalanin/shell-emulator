@@ -1,5 +1,5 @@
 """
-Модуль с реализацией команд эмулятора оболочки.
+Модуль с реализацией команд эмулятора оболочки
 """
 from typing import List, Optional
 from vfs import VirtualFileSystem

@@ -42,11 +42,19 @@
 ### Служебные команды
 - `history` — показать историю выполненных команд в сессии
 
+- `ls [flags] [path]` — список файлов в директории VFS.
+  Флаги:
+  - `-a` — показать все файлы (включая скрытые, начинающиеся с `.`)
+  - `-l` — длинный формат (тип, размер, имя)
+  - `-h` — человеко-читаемый размер (K, M, G)
+  
+  Флаги можно комбинировать: `ls -lah /path
+
 ## Запуск и тестирование
 
 ### Запуск в интерактивном режиме
 ```bat
-run.bat
-run.bat --vfs tests\vfs_nested
+.\run.bat
+.\run.bat --vfs tests\vfs_nested
 .\run.bat --vfs tests\vfs_nested --script tests\script_vfs_nested.txt
 .\run.bat --vfs tests\vfs_nested --script tests\test_stage4.txt

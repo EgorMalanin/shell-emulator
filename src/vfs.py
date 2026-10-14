@@ -178,14 +178,14 @@ class VirtualFileSystem:
                 continue
             if long_format:
                 type_mark = 'd' if child.is_dir else '-'
-                size_str = self._format_size(len(child.content), human_readable)
+                size_str =self._format_size(len(child.content),human_readable)
                 if child.is_dir:
                     size_str = '-'
                 suffix = '/' if child.is_dir else ''
                 line = f"{type_mark} {size_str:>8} {name}{suffix}"
             else:
                 suffix = '/' if child.is_dir else ''
-                size_str = self._format_size(len(child.content), human_readable)
+                size_str =self._format_size(len(child.content),human_readable)
                 if child.is_dir:
                     line = f"{name}{suffix}"
                 else:

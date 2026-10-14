@@ -84,7 +84,8 @@ class VirtualFileSystem:
         self._traverse(self.root, '/', result)
         return result
 
-    def _traverse(self,node:VFSNode,path:str,result:List[Tuple[str,bytes]])->None:
+    def _traverse(self,node:VFSNode,path:str,
+                  result:List[Tuple[str,bytes]])->None:
         """Рекурсивно обходит дерево VFS."""
         if not node.is_dir:
             result.append((path, node.content))
@@ -127,7 +128,8 @@ class VirtualFileSystem:
             return None
         return self._find_parent_rec(self.root, node)
 
-    def _find_parent_rec(self,current:VFSNode,target:VFSNode)->Optional[VFSNode]:
+    def _find_parent_rec(self,current:VFSNode,
+                         target:VFSNode)->Optional[VFSNode]:
         """Рекурсивно ищет родителя целевого узла."""
         for child in current.children.values():
             if child == target:
@@ -154,7 +156,29 @@ class VirtualFileSystem:
         self.cwd = node
         return True, ''
 
-    def list_directory(self,path_str:str='',show_all: bool = False,
+    def _format_entry(self, child: VFSNode, name: str,long_format: bool,
+        human_readable: bool) -> str:
+        """
+        Форматирует одну запись для вывода ls.
+        """
+        suffix = '/' if child.is_dir else ''
+        if long_format:
+            type_mark = 'd' if child.is_dir else '-'
+            if child.is_dir:
+                size_str = '-'
+            else:
+                size_str = self._format_size(
+                    len(child.content), human_readable
+                )
+            return f"{type_mark} {size_str:>8} {name}{suffix}"
+        if child.is_dir:
+            return f"{name}{suffix}"
+        size_str = self._format_size(
+            len(child.content), human_readable
+        )
+        return f"{name} ({size_str})"
+
+    def list_directory(self,path_str: str = '',show_all: bool = False,
             long_format: bool = False,
             human_readable: bool = False) -> Tuple[bool, str]:
         """
@@ -173,24 +197,11 @@ class VirtualFileSystem:
         lines = []
         for name in sorted(node.children.keys()):
             child = node.children[name]
-            is_hidden = name.startswith('.')
-            if not show_all and is_hidden:
+            if name.startswith('.') and not show_all:
                 continue
-            if long_format:
-                type_mark = 'd' if child.is_dir else '-'
-                size_str =self._format_size(len(child.content),human_readable)
-                if child.is_dir:
-                    size_str = '-'
-                suffix = '/' if child.is_dir else ''
-                line = f"{type_mark} {size_str:>8} {name}{suffix}"
-            else:
-                suffix = '/' if child.is_dir else ''
-                size_str =self._format_size(len(child.content),human_readable)
-                if child.is_dir:
-                    line = f"{name}{suffix}"
-                else:
-                    line = f"{name} ({size_str})"
-            lines.append(line)
+            lines.append(self._format_entry(
+                child, name, long_format, human_readable
+            ))
         return True, '\n'.join(lines)
 
     def _format_size(self, size: int, human: bool) -> str:

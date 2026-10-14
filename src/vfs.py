@@ -84,7 +84,8 @@ class VirtualFileSystem:
         self._traverse(self.root, '/', result)
         return result
 
-    def _traverse(self,node:VFSNode,path:str,result:List[Tuple[str,bytes]])->None:
+    def _traverse(self,node:VFSNode,path:str,
+        result:List[Tuple[str,bytes]])->None:
         """Рекурсивно обходит дерево VFS."""
         if not node.is_dir:
             result.append((path, node.content))
@@ -127,7 +128,8 @@ class VirtualFileSystem:
             return None
         return self._find_parent_rec(self.root, node)
 
-    def _find_parent_rec(self,current:VFSNode,target:VFSNode)->Optional[VFSNode]:
+    def _find_parent_rec(self,current:VFSNode,
+        target:VFSNode)->Optional[VFSNode]:
         """Рекурсивно ищет родителя целевого узла."""
         for child in current.children.values():
             if child == target:
@@ -167,8 +169,32 @@ class VirtualFileSystem:
             size = size / BYTES_PER_KILOBYTE
         return f"{size}P"
 
+    def _format_entry(self, child: VFSNode, name: str,
+                      long_format: bool,
+                      human_readable: bool) -> str:
+        """
+        Форматирует одну запись для вывода ls.
+        """
+        suffix = '/' if child.is_dir else ''
+        if long_format:
+            type_mark = 'd' if child.is_dir else '-'
+            if child.is_dir:
+                size_str = '-'
+            else:
+                size_str = self._format_size(
+                    len(child.content), human_readable
+                )
+            return f"{type_mark} {size_str:>8} {name}{suffix}"
+        if child.is_dir:
+            return f"{name}{suffix}"
+        size_str = self._format_size(
+            len(child.content), human_readable
+        )
+        return f"{name} ({size_str})"
+
     def list_directory(self,path_str: str = '',show_all: bool = False,
-        long_format:bool=False,human_readable:bool=False)->Tuple[bool,str]:
+            long_format: bool = False,
+            human_readable: bool = False) -> Tuple[bool, str]:
         """
         Выводит содержимое директории с учётом флагов.
         """
@@ -176,35 +202,21 @@ class VirtualFileSystem:
             node = self.resolve_path(path_str)
         else:
             node = self.cwd
+
         if node is None:
             return False, f"ls: нет доступа к '{path_str}'"
         if not node.is_dir:
             return False, f"ls: не директория: {path_str}"
         if not node.children:
             return True, ''
+
         lines = []
         for name in sorted(node.children.keys()):
             child = node.children[name]
-            is_hidden = name.startswith('.')
-            if not show_all and is_hidden:
+            if name.startswith('.') and not show_all:
                 continue
-            if long_format:
-                type_mark = 'd' if child.is_dir else '-'
-                if child.is_dir:
-                    size_str = '-'
-                else:
-                    size_str=self._format_size(len(child.content),human_readable)
-                suffix = '/' if child.is_dir else ''
-                line = f"{type_mark} {size_str:>8} {name}{suffix}"
-            else:
-                suffix = '/' if child.is_dir else ''
-                if child.is_dir:
-                    line = f"{name}{suffix}"
-                else:
-                    size_str = self._format_size(len(child.content), human_readable)
-                    line = f"{name} ({size_str})"
-            lines.append(line)
-        return True, '\n'.join(lines)
+            lines.append(self._format_entry(
+                child, name, long_format, human_readable))
 
     def get_current_path(self) -> str:
         """Возвращает путь текущей директории строкой."""
@@ -232,31 +244,55 @@ class VirtualFileSystem:
             return node.content.decode('utf-8')
         except UnicodeDecodeError:
             return "[Binary content]"
-    def remove_directory(self, path_str: str) -> Tuple[bool, str]:
+
+    def _check_rmdir(self, path_str: str) -> Optional[VFSNode]:
+        """
+        Проверяет возможность удаления директории.
+        """
+        if not path_str:
+            return None
+        node = self.resolve_path(path_str)
+        if node is None:
+            return None
+        if not node.is_dir:
+            return None
+        if node.children:
+            return None
+        if node == self.root:
+            return None
+        return node
+
+    def remove_directory(self, path_str: str
+                         ) -> Tuple[bool, str]:
         """
         Удаляет пустую директорию из VFS.
         """
         if not path_str:
             return False, "rmdir: missing operand"
-
-        node = self.resolve_path(path_str)
+        node = self._check_rmdir(path_str)
         if node is None:
-            return False, f"rmdir: '{path_str}': No such file or directory"
-
-        if not node.is_dir:
-            return False, f"rmdir: '{path_str}': Not a directory"
-
-        if node.children:
-            return False, f"rmdir: '{path_str}': Directory not empty"
-
-        if node == self.root:
-            return False, "rmdir: '/': Invalid argument"
-
+            if not path_str:
+                return False, "rmdir: missing operand"
+            resolved = self.resolve_path(path_str)
+            if resolved is None:
+                return False, (
+                    f"rmdir: '{path_str}': "
+                    "No such file or directory"
+                )
+            if not resolved.is_dir:
+                return False, (
+                    f"rmdir: '{path_str}': Not a directory"
+                )
+            if resolved.children:
+                return False, (
+                    f"rmdir: '{path_str}': Directory not empty"
+                )
+            if resolved == self.root:
+                return False, "rmdir: '/': Invalid argument"
         parent = self._find_parent(node)
         if parent:
             del parent.children[node.name]
             if self.cwd == node:
                 self.cwd = parent
             return True, ""
-
         return False, "rmdir: Internal error"

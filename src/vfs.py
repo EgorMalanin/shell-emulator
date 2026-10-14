@@ -79,7 +79,8 @@ class VirtualFileSystem:
         self._traverse(self.root, '/', result)
         return result
 
-    def _traverse(self,node:VFSNode,path:str,result:List[Tuple[str,bytes]])->None:
+    def _traverse(self,node:VFSNode,path:str,
+                  result:List[Tuple[str,bytes]])->None:
         """Рекурсивно обходит дерево VFS."""
         if not node.is_dir:
             result.append((path, node.content))
@@ -121,7 +122,8 @@ class VirtualFileSystem:
             return None
         return self._find_parent_rec(self.root, node)
 
-    def _find_parent_rec(self,current:VFSNode,target:VFSNode)->Optional[VFSNode]:
+    def _find_parent_rec(self,current:VFSNode,
+                         target:VFSNode)->Optional[VFSNode]:
         """Рекурсивно ищет родителя целевого узла."""
         for child in current.children.values():
             if child == target:
